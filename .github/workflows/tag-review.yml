@@ -15,25 +15,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up GitHub CLI
-        uses: cli/gh-action@v2
-
       - name: Create Pull Request
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Creating pull request for new tag ${{ github.ref_name }}"
-          BRANCH_NAME="release-${{ github.ref_name }}"
-          # Create a new branch
-          git checkout -b $BRANCH_NAME
-          git push origin $BRANCH_NAME
-          # Create a pull request
-          PULL_REQUEST_URL=$(gh pr create --title "Release ${{ github.ref_name }}" --body "This PR is for the new tag ${{ github.ref_name }}" --head $BRANCH_NAME --base main --json url -q ".url")
-          echo "Pull Request created: $PULL_REQUEST_URL"
+        id: create_pr
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const branchName = `release-${{ github.ref_name }}`;
+            const { data: pr } = await github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Release ${{ github.ref_name }}`,
+              head: branchName,
+              base: 'main',
+              body: `This PR is for the new tag ${{ github.ref_name }}`
+            });
+            return pr.html_url;
 
       - name: Request Reviewer Approval
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Requesting reviewer approval for the pull request"
-          gh pr review --request @danie182004 $PULL_REQUEST_URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prUrl = steps.create_pr.outputs.result;
+            await github.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prUrl.split('/').pop(),
+              reviewers: ['danie2004']
+            });
