@@ -5,7 +5,6 @@ on:
     tags:
       - 'v1*'
       - 'v2*'
-      - 'v3*'
 
 jobs:
   enforce-tag-protection:
@@ -15,12 +14,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Set up GitHub CLI
+        uses: cli/gh-action@v2
+
       - name: Enforce tag protection
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Enforcing protection policies for tags matching v1* and v2*"
           # GitHub CLI command to update protection settings
           gh api -X PUT \
             -H "Accept: application/vnd.github.v3+json" \
             /repos/${{ github.repository }}/branches/${{ github.ref_name }}/protection \
-            -F required_pull_request_reviews.dismiss_stale_reviews=true \
-            -F required_pull_request_reviews.required=true
+            -f required_pull_request_reviews.dismiss_stale_reviews=true \
+            -f required_pull_request_reviews.required=true
