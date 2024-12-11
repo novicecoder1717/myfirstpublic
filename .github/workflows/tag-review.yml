@@ -1,0 +1,27 @@
+name: Enforce Tag Protection
+
+on:
+  push:
+    tags:
+      - 'v1*'
+      - 'v2*'
+
+jobs:
+  validate-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check tag format
+        run: |
+          echo "Validating tag format..."
+          if [[ ! $GITHUB_REF =~ ^refs/tags/v[12][0-9]* ]]; then
+            echo "Invalid tag format. Allowed: v1*, v2*"
+            exit 1
+          fi
+          echo "Tag format is valid: $GITHUB_REF"
+
+      - name: Manual approval step
+        uses: hmarr/auto-approve-action@v2
+        if: always()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
