@@ -36,4 +36,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Requesting reviewer approval for the pull request"
-          gh pr review --request @reviewer_username $PULL_REQUEST_URL
+          gh pr review --request @danie182004 $PULL_REQUEST_URL
