@@ -20,8 +20,15 @@ jobs:
           fi
           echo "Tag format is valid: $GITHUB_REF"
 
-      - name: Manual approval step
-        uses: hmarr/auto-approve-action@v2
-        if: always()
+  require-approval:
+    needs: validate-tag
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+
+    steps:
+      - name: Await manual approval
+        uses: harmon758/wait-for-approval-action@v1.0.0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          timeout: 60m # Set timeout for review (e.g., 1 hour)
