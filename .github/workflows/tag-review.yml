@@ -42,5 +42,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: prUrl.split('/').pop(),
-              reviewers: ['danie2004']
+              reviewers: ['danie182004']
             });
